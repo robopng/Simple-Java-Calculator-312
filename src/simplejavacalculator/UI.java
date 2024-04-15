@@ -30,8 +30,7 @@ import java.awt.Font;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 
-import java.awt.Image;
-import javax.swing.ImageIcon; 
+import javax.swing.ImageIcon;
 import java.io.*;
 
 public class UI implements ActionListener {
@@ -49,10 +48,28 @@ public class UI implements ActionListener {
    private final JPanel panelSub8;
    
    private final JTextArea text;
-   
-   private final JButton but[], butAdd, butMinus, butMultiply, butDivide,
-      butEqual, butCancel, butSquareRoot, butSquare, butOneDividedBy,
-      butCos, butSin, butTan, butxpowerofy, butlog, butrate, butabs, butBinary, butln;
+
+   // convert this into but holding all the buttons?
+   // might be nicer for cleanliness of code later on
+   private final JButton[] but;
+    private final JButton butAdd;
+    private final JButton butMinus;
+    private final JButton butMultiply;
+    private final JButton butDivide;
+    private final JButton butEqual;
+    private final JButton butCancel;
+    private final JButton butSquareRoot;
+    private final JButton butSquare;
+    private final JButton butOneDividedBy;
+    private final JButton butCos;
+    private final JButton butSin;
+    private final JButton butTan;
+    private final JButton butxpowerofy;
+    private final JButton butlog;
+    private final JButton butrate;
+    private final JButton butabs;
+    private final JButton butBinary;
+    private final JButton butln;
    private final Calculator calc;
    
    private final String[] buttonValue = {"0", "1", "2", "3", "4", "5", "6",
@@ -61,13 +78,12 @@ public class UI implements ActionListener {
 
    private final Font font;
    private final Font textFont;
-   private ImageIcon image;
-   private BufferedImageCustom imageReturn;
-   
-   public UI() throws IOException {
+   private final ImageIcon image;
+
+    public UI() throws IOException {
       frame = new JFrame("Calculator PH");
-      
-      imageReturn = new BufferedImageCustom();
+
+      BufferedImageCustom imageReturn = new BufferedImageCustom();
       image = new ImageIcon(imageReturn.imageReturn());      
       
       panel = new JPanel();
@@ -124,10 +140,11 @@ public class UI implements ActionListener {
       
       text.setFont(textFont);
       text.setEditable(false);
-      
+
       for (int i = 0; i < 10; i++) {
          but[i].setFont(font);
-      }      
+      }
+      // this is where having an array might reduce the size of the code a lot...
       butAdd.setFont(font);
       butMinus.setFont(font);
       butMultiply.setFont(font);
@@ -139,14 +156,14 @@ public class UI implements ActionListener {
       butCos.setFont(font);
       butSin.setFont(font);
       butTan.setFont(font);
-      butln.setFont(font); 
+      butln.setFont(font);
       butxpowerofy.setFont(font);
       butlog.setFont(font);
       butrate.setFont(font);
       butabs.setFont(font);
       butCancel.setFont(font);
-      butBinary.setFont(font); 
-      
+      butBinary.setFont(font);
+
       panel.add(Box.createHorizontalStrut(100));
       panelSub1.add(text);
       panel.add(panelSub1);
@@ -240,7 +257,7 @@ public class UI implements ActionListener {
     
       try {
          checkNum = Double.parseDouble(text.getText());
-      } catch(NumberFormatException k) {
+      } catch(NumberFormatException ignored) {
 
       }
 
@@ -307,17 +324,17 @@ public class UI implements ActionListener {
             writer(calc.reset());
 
          if (source == butBinary)
-            parsetoBinary();
+            parseToBinary();
       }
 
       text.selectAll();
    }
    
-   private void parsetoBinary() {
+   private void parseToBinary() {
       try {
-         text.setText("" + Long.toBinaryString(Long.parseLong(text.getText())));
+         text.setText(Long.toBinaryString(Long.parseLong(text.getText())));
       } catch (NumberFormatException ex) {
-         System.err.println("Error while parse to binary." + ex.toString());
+         System.err.println("Error while parse to binary." + ex);
       }
    }
    
