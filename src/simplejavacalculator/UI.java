@@ -108,7 +108,8 @@ public class UI implements ActionListener {
       butrate = new JButton("x%");      
       butabs = new JButton("abs(x)");      
       butCancel = new JButton("C");      
-      butBinary = new JButton("Bin");      
+      butBinary = new JButton("Bin");
+      // add a decimal!!
       
       calc = new Calculator();
       
@@ -321,18 +322,14 @@ public class UI implements ActionListener {
    }
    
    public Double reader() {
-      Double num;
-      String str;
-      str = text.getText();
-      num = Double.valueOf(str);
-      
-      return num;
+      return Double.valueOf(text.getText());
    }
    
    public void writer(final Double num) {
       if (Double.isNaN(num)) {
-         text.setText("");
+         text.setText("NaN");
       } else {
+         // handle exceedingly small numbers (display MIN or 0?)
          text.setText(Double.toString(num));
       }
    }

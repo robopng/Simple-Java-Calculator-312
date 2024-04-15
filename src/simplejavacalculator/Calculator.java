@@ -19,11 +19,15 @@ import static java.lang.Math.pow;
 public class Calculator {
 
     public enum BiOperatorModes {
-        normal, add, minus, multiply, divide , xpowerofy 
+        normal, add, minus, multiply, divide , xpowerofy //, logbasen, etc.
     }
 
     public enum MonoOperatorModes {
         square, squareRoot, oneDividedBy, cos, sin, tan, log, rate, abs, ln,
+    }
+
+    public enum FunctionModes {
+        // for builtin simple mathematic functions
     }
 
     private Double num1, num2;
@@ -85,6 +89,7 @@ public class Calculator {
 
     
     public Double calculateMono(MonoOperatorModes newMode, Double num) {
+        // can this be converted to a switch?
         if (newMode.equals(MonoOperatorModes.square)) {
             return num * num;
         }
@@ -94,11 +99,12 @@ public class Calculator {
         if (newMode.equals(MonoOperatorModes.oneDividedBy)) {
             return 1 / num;
         }
+        // add functionality for operators to handle radians
         if (newMode.equals(MonoOperatorModes.cos)) {
-            return Math.cos(Math.toRadians(num));
+            return Math.cos(num); //Math.toRadians(num));
         }
         if (newMode.equals(MonoOperatorModes.sin)) {
-            return Math.sin(Math.toRadians(num));
+            return Math.sin(num); //Math.toRadians(num));
         }
         if (newMode.equals(MonoOperatorModes.tan)) {
             if (num == 0 || num % 180 == 0 ) {
@@ -108,7 +114,7 @@ public class Calculator {
                 return NaN;
             }
 
-            return Math.tan(Math.toRadians(num));
+            return Math.tan(num); //Math.toRadians(num));
         }
         if (newMode.equals(MonoOperatorModes.log)) {
             return log10(num);
