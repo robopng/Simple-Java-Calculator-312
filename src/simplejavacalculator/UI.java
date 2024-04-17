@@ -51,26 +51,9 @@ public class UI implements ActionListener {
 
    // convert this into but holding all the buttons?
    // might be nicer for cleanliness of code later on
-   private final JButton[] but;
-    private final JButton butAdd;
-    private final JButton butMinus;
-    private final JButton butMultiply;
-    private final JButton butDivide;
-    private final JButton butEqual;
-    private final JButton butCancel;
-    private final JButton butSquareRoot;
-    private final JButton butSquare;
-    private final JButton butOneDividedBy;
-    private final JButton butCos;
-    private final JButton butSin;
-    private final JButton butTan;
-    private final JButton butxpowerofy;
-    private final JButton butlog;
-    private final JButton butrate;
-    private final JButton butabs;
-    private final JButton butBinary;
-    private final JButton butln;
-   private final Calculator calc;
+   private final JButton but[], butDecimal, butNegative, butAdd, butMinus, butMultiply, butDivide,
+           butEqual, butCancel, butSquareRoot, butSquare, butOneDividedBy,
+           butCos, butSin, butTan, butxpowerofy, butyrootofx, butlog, butrate, butabs, butBinary, butln;
    
    private final String[] buttonValue = {"0", "1", "2", "3", "4", "5", "6",
       "7", "8", "9"};
@@ -106,7 +89,9 @@ public class UI implements ActionListener {
       but = new JButton[10];      
       for (int i = 0; i < 10; i++) {
     		 but[i] = new JButton(String.valueOf(i));
-      }      
+      }    
+      butDecimal = new JButton(".");
+      butNegative = new JButton("+/-");
       butAdd = new JButton("+");      
       butMinus = new JButton("-");      
       butMultiply = new JButton("*");      
@@ -125,19 +110,18 @@ public class UI implements ActionListener {
       butabs = new JButton("abs(x)");      
       butCancel = new JButton("C");      
       butBinary = new JButton("Bin");
-      // add a decimal!!
       
       calc = new Calculator();
       
    }
    
-   public void init() {      
+   public void init() {
       frame.setSize(450, 450);
-      frame.setLocationRelativeTo(null); 
+      frame.setLocationRelativeTo(null);
       frame.setResizable(false);
       frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
       frame.setIconImage(image.getImage());
-      
+
       text.setFont(textFont);
       text.setEditable(false);
 
@@ -145,6 +129,8 @@ public class UI implements ActionListener {
          but[i].setFont(font);
       }
       // this is where having an array might reduce the size of the code a lot...
+      butDecimal.setFont(font);
+      butNegative.setFont(font);
       butAdd.setFont(font);
       butMinus.setFont(font);
       butMultiply.setFont(font);
@@ -158,6 +144,7 @@ public class UI implements ActionListener {
       butTan.setFont(font);
       butln.setFont(font);
       butxpowerofy.setFont(font);
+      butyrootofx.setFont(font);
       butlog.setFont(font);
       butrate.setFont(font);
       butabs.setFont(font);
@@ -167,7 +154,7 @@ public class UI implements ActionListener {
       panel.add(Box.createHorizontalStrut(100));
       panelSub1.add(text);
       panel.add(panelSub1);
-      
+
       panelSub2.add(but[1]);
       panelSub2.add(but[2]);
       panelSub2.add(but[3]);
@@ -175,15 +162,15 @@ public class UI implements ActionListener {
       panelSub2.add(butAdd);
       panelSub2.add(butMinus);
       panel.add(panelSub2);
-      
+
       panelSub3.add(but[4]);
       panelSub3.add(but[5]);
       panelSub3.add(but[6]);
       panelSub3.add(Box.createHorizontalStrut(15));
       panelSub3.add(butMultiply);
-      panelSub3.add(butDivide);      
+      panelSub3.add(butDivide);
       panel.add(panelSub3);
-      
+
       panelSub4.add(but[7]);
       panelSub4.add(but[8]);
       panelSub4.add(but[9]);
@@ -191,24 +178,26 @@ public class UI implements ActionListener {
       panelSub4.add(butEqual);
       panelSub4.add(butCancel);
       panel.add(panelSub4);
-      
-      panelSub5.add(Box.createHorizontalStrut(92));
+
+      panelSub5.add(butDecimal);
       panelSub5.add(but[0]);
-      panelSub5.add(butln); 
-      panelSub5.add(Box.createHorizontalStrut(210));
+      panelSub5.add(butNegative);
+      panelSub5.add(Box.createHorizontalStrut(15));
       panel.add(panelSub5);
-      
+
       panelSub6.add(butSquare);
       panelSub6.add(butSquareRoot);
       panelSub6.add(butOneDividedBy);
       panelSub6.add(butxpowerofy);
+      panelSub6.add(butyrootofx);
       panel.add(panelSub6);
-      
+
       panelSub7.add(butCos);
       panelSub7.add(butSin);
       panelSub7.add(butTan);
+      panelSub5.add(butln);
       panel.add(panelSub7);
-      
+
       panelSub8.add(butlog);
       panelSub8.add(butrate);
       panelSub8.add(butabs);
@@ -218,6 +207,8 @@ public class UI implements ActionListener {
       for (int i = 0; i < 10; i++) {
          but[i].addActionListener(this);
       }      
+      butDecimal.addActionListener(this);
+      butNegative.addActionListener(this);
       butAdd.addActionListener(this);
       butMinus.addActionListener(this);
       butMultiply.addActionListener(this);
@@ -230,6 +221,7 @@ public class UI implements ActionListener {
       butTan.addActionListener(this);
       butln.addActionListener(this); 
       butxpowerofy.addActionListener(this);
+      butyrootofx.addActionListener(this);
       butlog.addActionListener(this);
       butrate.addActionListener(this);
       butabs.addActionListener(this);
@@ -253,8 +245,20 @@ public class UI implements ActionListener {
             return;
          }
       }
+      if (source == butDecimal) {
+         text.replaceSelection(".");
+         return;
+      }
+      if (source == butNegative) { // internal error when entering this first, doesn't affect calc
+         char x = text.getText().charAt(0);
+         if (Character.toString(x).equals("-")) {
+            text.replaceRange("", 0, 1);
+         } else {
+            text.insert("-", 0);
+         }
+         return;
 
-    
+      }
       try {
          checkNum = Double.parseDouble(text.getText());
       } catch(NumberFormatException ignored) {
@@ -285,7 +289,9 @@ public class UI implements ActionListener {
          if (source == butxpowerofy) {
             writer(calc.calculateBi(Calculator.BiOperatorModes.xpowerofy, reader()));
          }
-
+         if (source == butyrootofx) {
+            writer(calc.calculateBi(Calculator.BiOperatorModes.yrootofx, reader()));
+         }
          if (source == butSquare) {
             writer(calc.calculateMono(Calculator.MonoOperatorModes.square, reader()));
          }
