@@ -19,7 +19,7 @@ import static java.lang.Math.pow;
 public class Calculator {
 
     public enum BiOperatorModes {
-        normal, add, minus, multiply, divide , xpowerofy //, logbasen, etc.
+        normal, add, minus, multiply, divide , xpowerofy, yrootofx //, logbasen, etc.
     }
 
     public enum MonoOperatorModes {
@@ -55,6 +55,9 @@ public class Calculator {
         }
         if (mode.equals(BiOperatorModes.xpowerofy)) {
             return pow(num1,num2);
+        }
+        if (mode.equals(BiOperatorModes.yrootofx)) {
+            return Math.pow(num1, 1 / num2);
         }
 
         // never reach
