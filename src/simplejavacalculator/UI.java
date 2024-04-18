@@ -31,9 +31,11 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 
 import javax.swing.ImageIcon;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.*;
 
-public class UI implements ActionListener {
+public class UI implements ActionListener, KeyListener {
    
    private final JFrame frame;
    
@@ -70,6 +72,7 @@ public class UI implements ActionListener {
     private final JButton butabs;
     private final JButton butBinary;
     private final JButton butln;
+    private final JButton butKeyboard;
    private final Calculator calc;
    
    private final String[] buttonValue = {"0", "1", "2", "3", "4", "5", "6",
@@ -125,6 +128,7 @@ public class UI implements ActionListener {
       butabs = new JButton("abs(x)");      
       butCancel = new JButton("C");      
       butBinary = new JButton("Bin");
+      butKeyboard = new JButton("Key");
       // add a decimal!!
       
       calc = new Calculator();
@@ -137,7 +141,7 @@ public class UI implements ActionListener {
       frame.setResizable(false);
       frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
       frame.setIconImage(image.getImage());
-      
+
       text.setFont(textFont);
       text.setEditable(false);
 
@@ -163,6 +167,7 @@ public class UI implements ActionListener {
       butabs.setFont(font);
       butCancel.setFont(font);
       butBinary.setFont(font);
+      butKeyboard.setFont(font);
 
       panel.add(Box.createHorizontalStrut(100));
       panelSub1.add(text);
@@ -213,6 +218,7 @@ public class UI implements ActionListener {
       panelSub8.add(butrate);
       panelSub8.add(butabs);
       panelSub8.add(butBinary);
+      panelSub8.add(butKeyboard);
       panel.add(panelSub8);
       
       for (int i = 0; i < 10; i++) {
@@ -234,7 +240,7 @@ public class UI implements ActionListener {
       butrate.addActionListener(this);
       butabs.addActionListener(this);
       butBinary.addActionListener(this);
-      
+      butKeyboard.addKeyListener(this);
       butEqual.addActionListener(this);
       butCancel.addActionListener(this);
       
@@ -329,8 +335,28 @@ public class UI implements ActionListener {
 
       text.selectAll();
    }
-   
-   private void parseToBinary() {
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        // mandatory implements
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        // mandatory implements
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+        char keyChar = e.getKeyChar();
+        try {
+            text.replaceSelection(buttonValue[Character.getNumericValue(keyChar)]);
+        } catch (IllegalArgumentException ignored) {
+
+        }
+    }
+
+    private void parseToBinary() {
       try {
          text.setText(Long.toBinaryString(Long.parseLong(text.getText())));
       } catch (NumberFormatException ex) {
@@ -339,15 +365,15 @@ public class UI implements ActionListener {
    }
    
    public Double reader() {
-      return Double.valueOf(text.getText());
+       return Double.valueOf(text.getText());
    }
    
    public void writer(final Double num) {
-      if (Double.isNaN(num)) {
-         text.setText("NaN");
-      } else {
-         // handle exceedingly small numbers (display MIN or 0?)
-         text.setText(Double.toString(num));
-      }
+       if (Double.isNaN(num)) {
+           text.setText("");
+       } else {
+           // handle exceedingly small numbers (display MIN or 0?)
+           text.setText(Double.toString(num));
+       }
    }
 }
