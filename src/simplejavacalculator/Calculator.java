@@ -1,12 +1,12 @@
 /**
- * @name        Simple Java Calculator
- * @package     ph.calculator
- * @file        Main.java
- * @author      SORIA Pierre-Henry
- * @email       pierrehs@hotmail.com
- * @link        http://github.com/pH-7
- * @copyright   Copyright Pierre-Henry SORIA, All Rights Reserved.
- * @license     Apache (http://www.apache.org/licenses/LICENSE-2.0)
+ * @name Simple Java Calculator
+ * @package ph.calculator
+ * @file Main.java
+ * @author SORIA Pierre-Henry
+ * @email pierrehs@hotmail.com
+ * @link http://github.com/pH-7
+ * @copyright Copyright Pierre-Henry SORIA, All Rights Reserved.
+ * @license Apache (http://www.apache.org/licenses/LICENSE-2.0)
  */
 
 package simplejavacalculator;
@@ -19,7 +19,7 @@ import static java.lang.Math.pow;
 public class Calculator {
 
     public enum BiOperatorModes {
-        normal, add, minus, multiply, divide , xpowerofy //, logbasen, etc.
+        normal, add, minus, multiply, divide, xpowerofy //, logbasen, etc.
     }
 
     public enum MonoOperatorModes {
@@ -54,7 +54,7 @@ public class Calculator {
             return num1 / num2;
         }
         if (mode.equals(BiOperatorModes.xpowerofy)) {
-            return pow(num1,num2);
+            return pow(num1, num2);
         }
 
         // never reach
@@ -87,7 +87,7 @@ public class Calculator {
         return NaN;
     }
 
-    
+
     public Double calculateMono(MonoOperatorModes newMode, Double num) {
         // can this be converted to a switch?
         if (newMode.equals(MonoOperatorModes.square)) {
@@ -107,7 +107,7 @@ public class Calculator {
             return Math.sin(num); //Math.toRadians(num));
         }
         if (newMode.equals(MonoOperatorModes.tan)) {
-            if (num == 0 || num % 180 == 0 ) {
+            if (num == 0 || num % 180 == 0) {
                 return 0.0;
             }
             if (num % 90 == 0.0 && num % 180 != 0.0) {
@@ -122,10 +122,10 @@ public class Calculator {
         if (newMode.equals(MonoOperatorModes.ln)) {
             return log(num);
         }
-        if (newMode.equals(MonoOperatorModes.rate) ) {
+        if (newMode.equals(MonoOperatorModes.rate)) {
             return num / 100;
         }
-        if (newMode.equals(MonoOperatorModes.abs)){
+        if (newMode.equals(MonoOperatorModes.abs)) {
             return Math.abs(num);
         }
 
