@@ -33,6 +33,8 @@ import javax.swing.ImageIcon;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class UI implements ActionListener, KeyListener {
@@ -49,39 +51,32 @@ public class UI implements ActionListener, KeyListener {
     // convert this into but holding all the buttons?
     // might be nicer for cleanliness of code later on
     private final Calculator calc;
-    private final JButton[] but;
-    private final JButton butAdd;
-    private final JButton butMinus;
-    private final JButton butMultiply;
-    private final JButton butDivide;
-    private final JButton butEqual;
-    private final JButton butCancel;
-    private final JButton butSquareRoot;
-    private final JButton butSquare;
-    private final JButton butOneDividedBy;
-    private final JButton butCos;
-    private final JButton butSin;
-    private final JButton butTan;
-    private final JButton butxpowerofy;
-    private final JButton butlog;
-    private final JButton butrate;
-    private final JButton butabs;
-    private final JButton butBinary;
-    private final JButton butln;
-    private final JButton butKeyboard;
+    private static final String[] commands = {
+            "1", "2", "3", "4", "5", "6", "7", "8", "9", "0",
+            "+", "-", "*", "/", "=", "C",
+            "sqrt", "x^2", "x^y", "1/x",
+            "sin", "cos", "tan", "log", "ln",
+            "x%", "|x|", "bin(x)",
+            "Graph", "Key"
+    };
+    private final Map<String, JButton> buttons = new HashMap<>() {
+        {
+            for (String command : commands)
+                put(command, new JButton(command));
+        }
+    };
     private final GraphCalculator gCalc;
-    private final JButton[] gBut;
-    private final JButton butGraph;
-    private final JButton butGraphClose;
-    private final JButton butGraphComma;
-    private final JButton butGraphGo;
-    private final JButton butGraphScatter;
-    private final JButton butGraphLine;
-    private final JButton butGraphAdd;
-
-    private final String[] buttonValue = {"0", "1", "2", "3", "4", "5", "6",
-            "7", "8", "9"};
-
+    private static final String[] gCommands = {
+            "1", "2", "3", "4", "5", "6", "7", "8", "9", "0",
+            "Close", ",", "Go", "Scatter", "Line", "Add",
+            "Key"
+    };
+    private final Map<String, JButton> gButtons = new HashMap<>() {
+        {
+            for (String command : gCommands)
+                put(command, new JButton(command));
+        }
+    };
 
     private final Font font;
     private final Font textFont;
@@ -99,46 +94,12 @@ public class UI implements ActionListener, KeyListener {
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
         font = new Font("Consolas", Font.PLAIN, 18);
+        textFont = new Font("Consolas", Font.BOLD, 24);
 
         text = new JTextArea(1, 30);
         gText = new JTextArea(1, 30);
 
-        textFont = new Font("Consolas", Font.BOLD, 24);
-
-        but = new JButton[10];
-        gBut = new JButton[10];
-        for (int i = 0; i < 10; i++) {
-            but[i] = new JButton(String.valueOf(i));
-            gBut[i] = new JButton(String.valueOf(i));
-        }
-        butAdd = new JButton("+");
-        butMinus = new JButton("-");
-        butMultiply = new JButton("*");
-        butDivide = new JButton("/");
-        butEqual = new JButton("=");
-        butSquareRoot = new JButton("sqrt");
-        butSquare = new JButton("x*x");
-        butOneDividedBy = new JButton("1/x");
-        butCos = new JButton("Cos");
-        butSin = new JButton("Sin");
-        butTan = new JButton("Tan");
-        butln = new JButton("ln");
-        butxpowerofy = new JButton("x^y");
-        butlog = new JButton("log10(x)");
-        butrate = new JButton("x%");
-        butabs = new JButton("abs(x)");
-        butCancel = new JButton("C");
-        butBinary = new JButton("Bin");
-        butKeyboard = new JButton("Key");
-
-        butGraph = new JButton("Graph");
-        butGraphScatter = new JButton("Scatter");
-        butGraphLine = new JButton("Line");
-        butGraphComma = new JButton(",");
-        butGraphAdd = new JButton("Add");
-        butGraphGo = new JButton("Go");
-        butGraphClose = new JButton("Close");
-
+        // calculator initialization segment
         calc = new Calculator();
         gCalc = new GraphCalculator();
     }
@@ -161,98 +122,69 @@ public class UI implements ActionListener, KeyListener {
         gText.setFont(textFont);
         gText.setEditable(false);
 
-        for (int i = 0; i < 10; i++) {
-            but[i].setFont(font);
+        for (JButton button : buttons.values()) {
+            button.setFont(font);
+            button.addActionListener(this);
         }
-        // this is where having an array might reduce the size of the code a lot...
-        butAdd.setFont(font);
-        butMinus.setFont(font);
-        butMultiply.setFont(font);
-        butDivide.setFont(font);
-        butEqual.setFont(font);
-        butSquareRoot.setFont(font);
-        butSquare.setFont(font);
-        butOneDividedBy.setFont(font);
-        butCos.setFont(font);
-        butSin.setFont(font);
-        butTan.setFont(font);
-        butln.setFont(font);
-        butxpowerofy.setFont(font);
-        butlog.setFont(font);
-        butrate.setFont(font);
-        butabs.setFont(font);
-        butCancel.setFont(font);
-        butBinary.setFont(font);
-        butKeyboard.setFont(font);
-        butGraph.setFont(font);
+        for (JButton button : gButtons.values()) {
+            button.setFont(font);
+            button.addActionListener(this);
+        }
+        buttons.get("Key").addKeyListener(this);
+        gButtons.get("Key").addKeyListener(this);
 
         // panel creation for main calculator panel
         panel.add(Box.createHorizontalStrut(100));
         JPanel textSub = new JPanel(new FlowLayout());
         textSub.add(text);
         panel.add(textSub);
-        // visualization of panel layouts through arrays
-        // mainPanelSubs => any panel that goes like X X X   X X
-        JButton[][][] mainPanelSubs = new JButton[][][]{
-                {{but[1], but[2], but[3]}, {butAdd, butMinus}},
-                {{but[4], but[5], but[6]}, {butMultiply, butDivide}},
-                {{but[7], but[8], but[9]}, {butEqual, butCancel}},
-        };
-        // sidePanelSubs => any panel that goes like X X X X X
-        JButton[][] sidePanelSubs = new JButton[][]{
-                {but[0], butln, butGraph},
-                {butSquare, butSquareRoot, butOneDividedBy, butxpowerofy},
-                {butCos, butSin, butTan},
-                {butlog, butrate, butabs, butBinary, butKeyboard}
-        };
-        // if greater control over button placement is desired remove these
-        // for now they are a fun and easy simplification of the messy code
-        for (JButton[][] panelSub : mainPanelSubs) {
-            panel.add(this.getPanelSub(panelSub[0], panelSub[1]));
-        }
-        for (JButton[] panelSub : sidePanelSubs) {
-            panel.add(this.getPanelSub(panelSub));
-        }
+        panel.add(this.getPanelSub(
+                new JButton[]{buttons.get("1"), buttons.get("2"), buttons.get("3")},
+                new JButton[]{buttons.get("+"), buttons.get("-")},
+                15
+        ));
+        panel.add(this.getPanelSub(
+                new JButton[]{buttons.get("4"), buttons.get("5"), buttons.get("6")},
+                new JButton[]{buttons.get("*"), buttons.get("/")},
+                15
+        ));
+        panel.add(this.getPanelSub(
+                new JButton[]{buttons.get("7"), buttons.get("8"), buttons.get("9")},
+                new JButton[]{buttons.get("="), buttons.get("C")},
+                15
+        ));
+        panel.add(this.getPanelSub(
+                new JButton[]{buttons.get("0"), buttons.get("ln"), buttons.get("Graph")}
+        ));
+        panel.add(this.getPanelSub(
+                new JButton[]{buttons.get("x^2"), buttons.get("sqrt"), buttons.get("1/x"), buttons.get("x^y")}
+        ));
+        panel.add(this.getPanelSub(
+                new JButton[]{buttons.get("cos"), buttons.get("sin"), buttons.get("tan")}
+        ));
+        panel.add(this.getPanelSub(
+                new JButton[]{buttons.get("log"), buttons.get("x%"), buttons.get("|x|"), buttons.get("bin(x)"), buttons.get("Key")}
+        ));
 
-        // panel creation for graphing component panel
-        JButton[][][] gMainPanelSubs = new JButton[][][]{
-                {{gBut[1], gBut[2], gBut[3]}, {butGraphScatter, butGraphLine}},
-                {{gBut[4], gBut[5], gBut[6]}, {butGraphComma, butGraphAdd}},
-                {{gBut[7], gBut[8], gBut[9]}, {butGraphGo, butGraphClose}},
-        };
         gPanel.add(Box.createHorizontalStrut(100));
         JPanel gTextSub = new JPanel(new FlowLayout());
         gTextSub.add(gText);
         gPanel.add(gTextSub);
-        for (JButton[][] panelSub : gMainPanelSubs) {
-            gPanel.add(this.getPanelSub(panelSub[0], panelSub[1]));
-        }
-
-        // can we get something like this for all the buttons?
-        for (JButton button : but) {
-            button.addActionListener(this);
-        }
-        butAdd.addActionListener(this);
-        butMinus.addActionListener(this);
-        butMultiply.addActionListener(this);
-        butDivide.addActionListener(this);
-        butSquare.addActionListener(this);
-        butSquareRoot.addActionListener(this);
-        butOneDividedBy.addActionListener(this);
-        butCos.addActionListener(this);
-        butSin.addActionListener(this);
-        butTan.addActionListener(this);
-        butln.addActionListener(this);
-        butxpowerofy.addActionListener(this);
-        butlog.addActionListener(this);
-        butrate.addActionListener(this);
-        butabs.addActionListener(this);
-        butBinary.addActionListener(this);
-        butKeyboard.addKeyListener(this);
-        butGraph.addActionListener(this);
-
-        butEqual.addActionListener(this);
-        butCancel.addActionListener(this);
+        gPanel.add(this.getPanelSub(
+                new JButton[]{gButtons.get("1"), gButtons.get("2"), gButtons.get("3")},
+                new JButton[]{gButtons.get("Scatter"), gButtons.get("Line")},
+                15
+        ));
+        gPanel.add(this.getPanelSub(
+                new JButton[]{gButtons.get("4"), gButtons.get("5"), gButtons.get("6")},
+                new JButton[]{gButtons.get(","), gButtons.get("Add")},
+                15
+        ));
+        gPanel.add(this.getPanelSub(
+                new JButton[]{gButtons.get("7"), gButtons.get("8"), gButtons.get("9")},
+                new JButton[]{gButtons.get("Go"), gButtons.get("Close"), gButtons.get("Key")},
+                15
+        ));
 
         frame.add(panel);
         frame.setVisible(true);
@@ -269,14 +201,13 @@ public class UI implements ActionListener, KeyListener {
         return panelSub;
     }
 
-    private JPanel getPanelSub(JButton[] firstSegButtons, JButton[] secondSegButtons) {
-        int panelSeparatorWidth = 15;
+    private JPanel getPanelSub(JButton[] buttons1, JButton[] buttons2, int width) {
         JPanel panelSub = new JPanel(new FlowLayout());
-        for (JButton button : firstSegButtons) {
+        for (JButton button : buttons1) {
             panelSub.add(button);
         }
-        panelSub.add(Box.createHorizontalStrut(panelSeparatorWidth));
-        for (JButton button : secondSegButtons) {
+        panelSub.add(Box.createHorizontalStrut(width));
+        for (JButton button : buttons2) {
             panelSub.add(button);
         }
         return panelSub;
@@ -284,100 +215,97 @@ public class UI implements ActionListener, KeyListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        final Object source = e.getSource();
+        // Casting down is bad for the environment! Can this be changed?
+        final JButton source = (JButton) e.getSource();
         Double checkNum = null;
-
-        for (int i = 0; i < 10; i++) {
-            if (source == but[i]) {
-                text.replaceSelection(buttonValue[i]);
-                return;
-            }
-            if (source == gBut[i]) {
-                gText.replaceSelection(buttonValue[i]);
-                return;
-            }
-        }
-
-
         try {
             checkNum = Double.parseDouble(text.getText());
         } catch (NumberFormatException ignored) {
 
         }
 
-        if (checkNum != null || source == butCancel) {
-            if (source == butAdd) {
-                writer(calc.calculateBi(Calculator.BiOperatorModes.add, reader()));
-                text.replaceSelection(butAdd.getText());
+        for (int i = 0; i < 10; i++) {
+            if (source == buttons.get(String.valueOf(i))) {
+                text.replaceSelection(String.valueOf(i));
+                return;
             }
-
-            if (source == butMinus) {
-                writer(calc.calculateBi(Calculator.BiOperatorModes.minus, reader()));
-                text.replaceSelection(butMinus.getText());
+            if (source == gButtons.get(String.valueOf(i))) {
+                gText.replaceSelection(String.valueOf(i));
+                return;
             }
+        }
 
-            if (source == butMultiply) {
-                writer(calc.calculateBi(Calculator.BiOperatorModes.multiply, reader()));
-                text.replaceSelection(butMultiply.getText());
-            }
+        if (checkNum != null || source == buttons.get("C")) {
+            switch (source.getText()) {
+                case "+":
+                    writer(calc.calculateBi(Calculator.BiOperatorModes.add, reader()));
+                    text.replaceSelection(buttons.get("+").getText());
+                    break;
+                case "-":
+                    writer(calc.calculateBi(Calculator.BiOperatorModes.minus, reader()));
+                    text.replaceSelection(buttons.get("-").getText());
+                    break;
+                case "*":
+                    writer(calc.calculateBi(Calculator.BiOperatorModes.multiply, reader()));
+                    text.replaceSelection(buttons.get("*").getText());
+                    break;
+                case "/":
+                    writer(calc.calculateBi(Calculator.BiOperatorModes.divide, reader()));
+                    text.replaceSelection(buttons.get("/").getText());
+                    break;
+                case "x^y":
+                    writer(calc.calculateBi(Calculator.BiOperatorModes.xpowerofy, reader()));
+                    break;
+                case "x^2":
+                    writer(calc.calculateMono(Calculator.MonoOperatorModes.square, reader()));
+                    break;
+                case "sqrt":
+                    writer(calc.calculateMono(Calculator.MonoOperatorModes.squareRoot, reader()));
+                    break;
+                case "1/x":
+                    writer(calc.calculateMono(Calculator.MonoOperatorModes.oneDividedBy, reader()));
+                    break;
+                case "sin":
+                    writer(calc.calculateMono(Calculator.MonoOperatorModes.sin, reader()));
+                    break;
+                case "cos":
+                    writer(calc.calculateMono(Calculator.MonoOperatorModes.cos, reader()));
+                    break;
+                case "tan":
+                    writer(calc.calculateMono(Calculator.MonoOperatorModes.tan, reader()));
+                    break;
+                case "log":
+                    writer(calc.calculateMono(Calculator.MonoOperatorModes.log, reader()));
+                    break;
+                case "ln":
+                    writer(calc.calculateMono(Calculator.MonoOperatorModes.ln, reader()));
+                    break;
+                case "x%":
+                    writer(calc.calculateMono(Calculator.MonoOperatorModes.rate, reader()));
+                    break;
+                case "|x|":
+                    writer(calc.calculateMono(Calculator.MonoOperatorModes.abs, reader()));
+                    break;
+                case "=":
+                    writer(calc.calculateEqual(reader()));
+                    break;
+                case "C":
+                    writer(calc.reset());
+                    break;
+                case "bin(x)":
+                    parseToBinary();
+                    break;
+                case "Graph":
+                    gFrame.setVisible(true);
+                    gFrame.setAlwaysOnTop(true);
+                    break;
+                case "Close":
+                    gFrame.setVisible(false);
+                    gFrame.setAlwaysOnTop(false);
+                    break;
+                default:
+                    break;
 
-            if (source == butDivide) {
-                writer(calc.calculateBi(Calculator.BiOperatorModes.divide, reader()));
-                text.replaceSelection(butDivide.getText());
-            }
-
-            if (source == butxpowerofy) {
-                writer(calc.calculateBi(Calculator.BiOperatorModes.xpowerofy, reader()));
-            }
-
-            if (source == butSquare) {
-                writer(calc.calculateMono(Calculator.MonoOperatorModes.square, reader()));
-            }
-
-            if (source == butSquareRoot)
-                writer(calc.calculateMono(Calculator.MonoOperatorModes.squareRoot, reader()));
-
-            if (source == butOneDividedBy)
-                writer(calc.calculateMono(Calculator.MonoOperatorModes.oneDividedBy, reader()));
-
-            if (source == butCos)
-                writer(calc.calculateMono(Calculator.MonoOperatorModes.cos, reader()));
-
-            if (source == butSin)
-                writer(calc.calculateMono(Calculator.MonoOperatorModes.sin, reader()));
-
-            if (source == butTan)
-                writer(calc.calculateMono(Calculator.MonoOperatorModes.tan, reader()));
-
-            if (source == butlog)
-                writer(calc.calculateMono(Calculator.MonoOperatorModes.log, reader()));
-
-            if (source == butln)
-                writer(calc.calculateMono(Calculator.MonoOperatorModes.ln, reader()));
-
-            if (source == butrate)
-                writer(calc.calculateMono(Calculator.MonoOperatorModes.rate, reader()));
-
-            if (source == butabs)
-                writer(calc.calculateMono(Calculator.MonoOperatorModes.abs, reader()));
-
-            if (source == butEqual)
-                writer(calc.calculateEqual(reader()));
-
-            if (source == butCancel)
-                writer(calc.reset());
-
-            if (source == butBinary)
-                parseToBinary();
-
-            if (source == butGraph) {
-                gFrame.setVisible(true);
-                gFrame.setAlwaysOnTop(true);
-            }
-
-            if (source == butGraphClose) {
-                gFrame.setVisible(false);
-                gFrame.setAlwaysOnTop(false);
             }
         }
 
@@ -396,15 +324,15 @@ public class UI implements ActionListener, KeyListener {
 
     @Override
     public void keyTyped(KeyEvent e) {
-        char keyChar = e.getKeyChar();
         try {
-            text.replaceSelection(buttonValue[Character.getNumericValue(keyChar)]);
+            text.replaceSelection(String.valueOf(e.getKeyChar()));
         } catch (ArrayIndexOutOfBoundsException ignored) {
-            // non-numeric keys will exceed the 0-10 range of buttonValue
+            // non-numeric keys ignored for now; can add greater functionality, though
         }
     }
 
     private void parseToBinary() {
+        // currently this cannot handle strings with E in them
         try {
             text.setText(Long.toBinaryString(Long.parseLong(text.getText())));
         } catch (NumberFormatException ex) {
