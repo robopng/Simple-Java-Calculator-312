@@ -210,8 +210,7 @@ public class UI implements ActionListener, KeyListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         // Casting down is bad for the environment! Can this be changed?
-        if (!(e.getSource() instanceof JButton source))
-            return;
+        if (!(e.getSource() instanceof JButton source)) return;
 
         for (int i = 0; i < 10; i++) {
             if (source == buttons.get(String.valueOf(i))) {
