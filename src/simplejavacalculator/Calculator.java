@@ -12,17 +12,11 @@
 package simplejavacalculator;
 
 import static java.lang.Double.NaN;
-import static java.lang.Math.log;
-import static java.lang.Math.log10;
-import static java.lang.Math.pow;
 
 public class Calculator {
 
-    public enum BiOperatorModes {
-        normal, add, minus, multiply, divide, xpowerofy //, logbasen, etc.
-    }
-
-    public enum MonoOperatorModes {
+    public enum OperatorModes {
+        normal, add, minus, multiply, divide, xpowerofy, //, logbasen, etc.
         square, squareRoot, oneDividedBy, cos, sin, tan, log, rate, abs, ln,
     }
 
@@ -31,107 +25,78 @@ public class Calculator {
     }
 
     private Double num1, num2;
-    private BiOperatorModes mode = BiOperatorModes.normal;
+    private OperatorModes mode = OperatorModes.normal;
 
-    private Double calculateBiImpl() {
-        if (mode.equals(BiOperatorModes.normal)) {
-            return num2;
-        }
-        if (mode.equals(BiOperatorModes.add)) {
-            if (num2 != 0) {
-                return num1 + num2;
-            }
-
-            return num1;
-        }
-        if (mode.equals(BiOperatorModes.minus)) {
-            return num1 - num2;
-        }
-        if (mode.equals(BiOperatorModes.multiply)) {
-            return num1 * num2;
-        }
-        if (mode.equals(BiOperatorModes.divide)) {
-            return num1 / num2;
-        }
-        if (mode.equals(BiOperatorModes.xpowerofy)) {
-            return pow(num1, num2);
-        }
-
-        // never reach
-        throw new Error();
-    }
-
-    public Double calculateBi(BiOperatorModes newMode, Double num) {
-        if (mode.equals(BiOperatorModes.normal)) {
+    // I have no idea how this works (there is no documentation nor are there any comments)
+    // so I will not fold this into the large switch in calculate()
+    public Double calculateBi(OperatorModes newMode, Double num) {
+        if (mode.equals(OperatorModes.normal)) {
             num2 = 0.0;
             num1 = num;
             mode = newMode;
             return NaN;
         } else {
             num2 = num;
-            num1 = calculateBiImpl();
+            num1 = calculate(mode, num);
             mode = newMode;
             return num1;
         }
     }
 
     public Double calculateEqual(Double num) {
-        return calculateBi(BiOperatorModes.normal, num);
+        return calculateBi(OperatorModes.normal, num);
     }
 
     public Double reset() {
         num2 = 0.0;
         num1 = 0.0;
-        mode = BiOperatorModes.normal;
+        mode = OperatorModes.normal;
 
         return NaN;
     }
 
 
-    public Double calculateMono(MonoOperatorModes newMode, Double num) {
-        // can this be converted to a switch?
-        if (newMode.equals(MonoOperatorModes.square)) {
-            return num * num;
-        }
-        if (newMode.equals(MonoOperatorModes.squareRoot)) {
-            return Math.sqrt(num);
-        }
-        if (newMode.equals(MonoOperatorModes.oneDividedBy)) {
-            return 1 / num;
-        }
-        // add functionality for operators to handle radians
-        if (newMode.equals(MonoOperatorModes.cos)) {
-            return Math.cos(num); //Math.toRadians(num));
-        }
-        if (newMode.equals(MonoOperatorModes.sin)) {
-            return Math.sin(num); //Math.toRadians(num));
-        }
-        if (newMode.equals(MonoOperatorModes.tan)) {
-            if (num == 0 || num % 180 == 0) {
-                return 0.0;
-            }
-            if (num % 90 == 0.0 && num % 180 != 0.0) {
-                return NaN;
-            }
+    public Double calculate(OperatorModes newMode, Double num) {
 
-            return Math.tan(num); //Math.toRadians(num));
+        switch(newMode){
+            case square:
+                return num*num;
+            case squareRoot:
+                return Math.sqrt(num);
+            case oneDividedBy:
+                return 1/num;
+            case cos:
+                return Math.cos(num);
+            case sin:
+                return Math.sin(num);
+            case tan:
+                if (num == 0 || num % 180 == 0)
+                    return 0.0;
+                if (num % 90 == 0)  // unreachable if == 180 so don't worry
+                    return 0.0;
+                return Math.tan(num);
+            case log:
+                return Math.log10(num);
+            case ln:
+                return Math.log(num);
+            case rate:
+                return num / 100;
+            case abs:
+                return Math.abs(num);
+            // bi operator modes
+            case add:
+                return num1 + num2;
+            case minus:
+                return num1 - num2;
+            case multiply:
+                return num1 * num2;
+            case divide:
+                return num2 > 0 ? NaN : num1 / num2;
+            case xpowerofy:
+                return Math.pow(num1, num2);
+            default:
+                throw new Error();
         }
-        if (newMode.equals(MonoOperatorModes.log)) {
-            return log10(num);
-        }
-        if (newMode.equals(MonoOperatorModes.ln)) {
-            return log(num);
-        }
-        if (newMode.equals(MonoOperatorModes.rate)) {
-            return num / 100;
-        }
-        if (newMode.equals(MonoOperatorModes.abs)) {
-            return Math.abs(num);
-        }
-
-        // never reach
-        throw new Error();
     }
-
 }
 

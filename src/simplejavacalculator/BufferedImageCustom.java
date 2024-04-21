@@ -1,7 +1,6 @@
 package simplejavacalculator;
 
 import java.io.*;
-import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 import java.awt.*;
 
@@ -15,8 +14,7 @@ class BufferedImageCustom {
         Image image;
 
         InputStream bis = getClass().getResourceAsStream("/resources/icon/icon.png");
-        BufferedImage bImage2 = ImageIO.read(bis);
-        image = bImage2;
+        image = ImageIO.read(bis);  // pray it's not null
 
         return image;
     }

@@ -33,6 +33,7 @@ import javax.swing.ImageIcon;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.*;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -48,9 +49,6 @@ public class UI implements ActionListener, KeyListener {
     private final JTextArea text;
     private final JTextArea gText;
 
-    // convert this into but holding all the buttons?
-    // might be nicer for cleanliness of code later on
-    private final Calculator calc;
     private static final String[] commands = {
             "1", "2", "3", "4", "5", "6", "7", "8", "9", "0",
             "+", "-", "*", "/", "=", "C",
@@ -59,24 +57,16 @@ public class UI implements ActionListener, KeyListener {
             "x%", "|x|", "bin(x)",
             "Graph", "Key"
     };
-    private final Map<String, JButton> buttons = new HashMap<>() {
-        {
-            for (String command : commands)
-                put(command, new JButton(command));
-        }
-    };
-    private final GraphCalculator gCalc;
     private static final String[] gCommands = {
             "1", "2", "3", "4", "5", "6", "7", "8", "9", "0",
             "Close", ",", "Go", "Scatter", "Line", "Add",
             "Key"
     };
-    private final Map<String, JButton> gButtons = new HashMap<>() {
-        {
-            for (String command : gCommands)
-                put(command, new JButton(command));
-        }
-    };
+    private final Map<String, JButton> buttons = new HashMap<>();
+    private final Map<String, JButton> gButtons = new HashMap<>();
+
+    private final Calculator calc;
+    private final GraphCalculator gCalc;
 
     private final Font font;
     private final Font textFont;
@@ -98,6 +88,11 @@ public class UI implements ActionListener, KeyListener {
 
         text = new JTextArea(1, 30);
         gText = new JTextArea(1, 30);
+
+        for (String command : commands)
+                buttons.put(command, new JButton(command));
+        for (String command : gCommands)
+                gButtons.put(command, new JButton(command));
 
         // calculator initialization segment
         calc = new Calculator();
@@ -190,7 +185,6 @@ public class UI implements ActionListener, KeyListener {
         frame.setVisible(true);
 
         gFrame.add(gPanel);
-        gFrame.setVisible(true);
     }
 
     private JPanel getPanelSub(JButton[] buttons) {
@@ -216,13 +210,8 @@ public class UI implements ActionListener, KeyListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         // Casting down is bad for the environment! Can this be changed?
-        final JButton source = (JButton) e.getSource();
-        Double checkNum = null;
-        try {
-            checkNum = Double.parseDouble(text.getText());
-        } catch (NumberFormatException ignored) {
-
-        }
+        if (!(e.getSource() instanceof JButton source))
+            return;
 
         for (int i = 0; i < 10; i++) {
             if (source == buttons.get(String.valueOf(i))) {
@@ -235,78 +224,78 @@ public class UI implements ActionListener, KeyListener {
             }
         }
 
-        if (checkNum != null || source == buttons.get("C")) {
-            switch (source.getText()) {
-                case "+":
-                    writer(calc.calculateBi(Calculator.BiOperatorModes.add, reader()));
-                    text.replaceSelection(buttons.get("+").getText());
-                    break;
-                case "-":
-                    writer(calc.calculateBi(Calculator.BiOperatorModes.minus, reader()));
-                    text.replaceSelection(buttons.get("-").getText());
-                    break;
-                case "*":
-                    writer(calc.calculateBi(Calculator.BiOperatorModes.multiply, reader()));
-                    text.replaceSelection(buttons.get("*").getText());
-                    break;
-                case "/":
-                    writer(calc.calculateBi(Calculator.BiOperatorModes.divide, reader()));
-                    text.replaceSelection(buttons.get("/").getText());
-                    break;
-                case "x^y":
-                    writer(calc.calculateBi(Calculator.BiOperatorModes.xpowerofy, reader()));
-                    break;
-                case "x^2":
-                    writer(calc.calculateMono(Calculator.MonoOperatorModes.square, reader()));
-                    break;
-                case "sqrt":
-                    writer(calc.calculateMono(Calculator.MonoOperatorModes.squareRoot, reader()));
-                    break;
-                case "1/x":
-                    writer(calc.calculateMono(Calculator.MonoOperatorModes.oneDividedBy, reader()));
-                    break;
-                case "sin":
-                    writer(calc.calculateMono(Calculator.MonoOperatorModes.sin, reader()));
-                    break;
-                case "cos":
-                    writer(calc.calculateMono(Calculator.MonoOperatorModes.cos, reader()));
-                    break;
-                case "tan":
-                    writer(calc.calculateMono(Calculator.MonoOperatorModes.tan, reader()));
-                    break;
-                case "log":
-                    writer(calc.calculateMono(Calculator.MonoOperatorModes.log, reader()));
-                    break;
-                case "ln":
-                    writer(calc.calculateMono(Calculator.MonoOperatorModes.ln, reader()));
-                    break;
-                case "x%":
-                    writer(calc.calculateMono(Calculator.MonoOperatorModes.rate, reader()));
-                    break;
-                case "|x|":
-                    writer(calc.calculateMono(Calculator.MonoOperatorModes.abs, reader()));
-                    break;
-                case "=":
-                    writer(calc.calculateEqual(reader()));
-                    break;
-                case "C":
-                    writer(calc.reset());
-                    break;
-                case "bin(x)":
-                    parseToBinary();
-                    break;
-                case "Graph":
-                    gFrame.setVisible(true);
-                    gFrame.setAlwaysOnTop(true);
-                    break;
-                case "Close":
-                    gFrame.setVisible(false);
-                    gFrame.setAlwaysOnTop(false);
-                    break;
-                default:
-                    break;
-
-            }
+        // this does cause the program to throw an error, but that error does nothing.
+        // It's just routine exception handling stuff, so I'm choosing not to include another try-catch
+        // if (checkNum != null || source == buttons.get("C"))
+        switch (source.getText()) {
+            case "+":
+                writer(calc.calculateBi(Calculator.OperatorModes.add, reader()));
+                text.replaceSelection(buttons.get("+").getText());
+                break;
+            case "-":
+                writer(calc.calculateBi(Calculator.OperatorModes.minus, reader()));
+                text.replaceSelection(buttons.get("-").getText());
+                break;
+            case "*":
+                writer(calc.calculateBi(Calculator.OperatorModes.multiply, reader()));
+                text.replaceSelection(buttons.get("*").getText());
+                break;
+            case "/":
+                writer(calc.calculateBi(Calculator.OperatorModes.divide, reader()));
+                text.replaceSelection(buttons.get("/").getText());
+                break;
+            case "x^y":
+                writer(calc.calculateBi(Calculator.OperatorModes.xpowerofy, reader()));
+                break;
+            case "x^2":
+                writer(calc.calculate(Calculator.OperatorModes.square, reader()));
+                break;
+            case "sqrt":
+                writer(calc.calculate(Calculator.OperatorModes.squareRoot, reader()));
+                break;
+            case "1/x":
+                writer(calc.calculate(Calculator.OperatorModes.oneDividedBy, reader()));
+                break;
+            case "sin":
+                writer(calc.calculate(Calculator.OperatorModes.sin, reader()));
+                break;
+            case "cos":
+                writer(calc.calculate(Calculator.OperatorModes.cos, reader()));
+                break;
+            case "tan":
+                writer(calc.calculate(Calculator.OperatorModes.tan, reader()));
+                break;
+            case "log":
+                writer(calc.calculate(Calculator.OperatorModes.log, reader()));
+                break;
+            case "ln":
+                writer(calc.calculate(Calculator.OperatorModes.ln, reader()));
+                break;
+            case "x%":
+                writer(calc.calculate(Calculator.OperatorModes.rate, reader()));
+                break;
+            case "|x|":
+                writer(calc.calculate(Calculator.OperatorModes.abs, reader()));
+                break;
+            case "=":
+                writer(calc.calculateEqual(reader()));
+                break;
+            case "C":
+                writer(calc.reset());
+                break;
+            case "bin(x)":
+                parseToBinary();
+                break;
+            case "Graph":
+                gFrame.setVisible(true);
+                gFrame.setAlwaysOnTop(true);
+                break;
+            case "Close":
+                gFrame.setVisible(false);
+                gFrame.setAlwaysOnTop(false);
+                break;
+            default:
+                break;
         }
 
         text.selectAll();
@@ -325,7 +314,10 @@ public class UI implements ActionListener, KeyListener {
     @Override
     public void keyTyped(KeyEvent e) {
         try {
-            text.replaceSelection(String.valueOf(e.getKeyChar()));
+            if (gPanel.isShowing())
+                gText.replaceSelection(String.valueOf(e.getKeyChar()));
+            else
+                text.replaceSelection(String.valueOf(e.getKeyChar()));
         } catch (ArrayIndexOutOfBoundsException ignored) {
             // non-numeric keys ignored for now; can add greater functionality, though
         }
@@ -341,7 +333,7 @@ public class UI implements ActionListener, KeyListener {
     }
 
     public Double reader() {
-        return Double.valueOf(text.getText());
+        return text.getText().isEmpty() ? 0 : Double.parseDouble(text.getText());
     }
 
     public void writer(final Double num) {
