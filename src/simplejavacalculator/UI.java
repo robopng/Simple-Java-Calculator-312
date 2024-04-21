@@ -31,12 +31,15 @@ import javax.swing.BoxLayout;
 
 import javax.swing.ImageIcon;
 import java.awt.event.KeyEvent;
+
+import static java.awt.event.KeyEvent.*;
+
 import java.awt.event.KeyListener;
 import java.io.*;
 
 import java.util.HashMap;
 import java.util.Map;
-
+import java.util.regex.Pattern;
 
 public class UI implements ActionListener, KeyListener {
 
@@ -59,7 +62,7 @@ public class UI implements ActionListener, KeyListener {
     };
     private static final String[] gCommands = {
             "1", "2", "3", "4", "5", "6", "7", "8", "9", "0",
-            "Close", ",", "Go", "Scatter", "Line", "Add",
+            "Reset", ",", "Go", "Scatter", "Line", "Add", "Series",
             "Key"
     };
     private final Map<String, JButton> buttons = new HashMap<>();
@@ -90,9 +93,9 @@ public class UI implements ActionListener, KeyListener {
         gText = new JTextArea(1, 30);
 
         for (String command : commands)
-                buttons.put(command, new JButton(command));
+            buttons.put(command, new JButton(command));
         for (String command : gCommands)
-                gButtons.put(command, new JButton(command));
+            gButtons.put(command, new JButton(command));
 
         // calculator initialization segment
         calc = new Calculator();
@@ -109,7 +112,7 @@ public class UI implements ActionListener, KeyListener {
         gFrame.setSize(450, 450);
         gFrame.setLocationRelativeTo(null);
         gFrame.setResizable(false);
-        gFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        gFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         gFrame.setIconImage(image.getImage());
 
         text.setFont(textFont);
@@ -168,17 +171,22 @@ public class UI implements ActionListener, KeyListener {
         gPanel.add(this.getPanelSub(
                 new JButton[]{gButtons.get("1"), gButtons.get("2"), gButtons.get("3")},
                 new JButton[]{gButtons.get("Scatter"), gButtons.get("Line")},
-                15
+                45
         ));
         gPanel.add(this.getPanelSub(
                 new JButton[]{gButtons.get("4"), gButtons.get("5"), gButtons.get("6")},
-                new JButton[]{gButtons.get(","), gButtons.get("Add")},
+                new JButton[]{gButtons.get(","), gButtons.get("Add"), gButtons.get("Series")},
                 15
         ));
         gPanel.add(this.getPanelSub(
                 new JButton[]{gButtons.get("7"), gButtons.get("8"), gButtons.get("9")},
-                new JButton[]{gButtons.get("Go"), gButtons.get("Close"), gButtons.get("Key")},
+                new JButton[]{gButtons.get("Go"), gButtons.get("Reset"), gButtons.get("Key")},
                 15
+        ));
+        gPanel.add(this.getPanelSub(
+                new JButton[]{gButtons.get("0")},
+                new JButton[]{},
+                232
         ));
 
         frame.add(panel);
@@ -207,26 +215,10 @@ public class UI implements ActionListener, KeyListener {
         return panelSub;
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        // Casting down is bad for the environment! Can this be changed?
-        if (!(e.getSource() instanceof JButton source)) return;
-
-        for (int i = 0; i < 10; i++) {
-            if (source == buttons.get(String.valueOf(i))) {
-                text.replaceSelection(String.valueOf(i));
-                return;
-            }
-            if (source == gButtons.get(String.valueOf(i))) {
-                gText.replaceSelection(String.valueOf(i));
-                return;
-            }
-        }
-
-        // this does cause the program to throw an error, but that error does nothing.
-        // It's just routine exception handling stuff, so I'm choosing not to include another try-catch
-        // if (checkNum != null || source == buttons.get("C"))
-        switch (source.getText()) {
+    public void check(String code) {
+        // used in more complex input situations where criteria need to be met before continuing
+        Pattern pattern;
+        switch (code) {
             case "+":
                 writer(calc.calculateBi(Calculator.OperatorModes.add, reader()));
                 text.replaceSelection(buttons.get("+").getText());
@@ -285,17 +277,62 @@ public class UI implements ActionListener, KeyListener {
             case "bin(x)":
                 parseToBinary();
                 break;
+            // graphing calculator conditions
             case "Graph":
                 gFrame.setVisible(true);
                 gFrame.setAlwaysOnTop(true);
                 break;
-            case "Close":
-                gFrame.setVisible(false);
-                gFrame.setAlwaysOnTop(false);
+            case "Reset":
+                gCalc.reset();
+                break;
+            case ",":
+                pattern = Pattern.compile("\\d+");
+                if (pattern.matcher(gText.getText()).find())
+                    gText.replaceSelection(",");
+                break;
+            case "Add":
+                // verify that there is a pair of coordinates in the screen and then load
+                pattern = Pattern.compile("\\d+,\\d+");
+                if (pattern.matcher(gText.getText()).find()) {
+                    gCalc.load(gText.getText());
+                    writer(Double.NaN);
+                }
+                break;
+            case "Line":
+                gCalc.setLine();
+                break;
+            case "Scatter":
+                gCalc.setScatter();
+                break;
+            case "Series":
+                gCalc.commitSeries();
+                break;
+            case "Go":
+                Thread t = new Thread(gCalc::go);
+                t.start();
                 break;
             default:
                 break;
         }
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        // Casting down is bad for the environment! Can this be changed?
+        if (!(e.getSource() instanceof JButton source)) return;
+
+        for (int i = 0; i < 10; i++) {
+            if (source == buttons.get(String.valueOf(i))) {
+                text.replaceSelection(String.valueOf(i));
+                return;
+            }
+            if (source == gButtons.get(String.valueOf(i))) {
+                gText.replaceSelection(String.valueOf(i));
+                return;
+            }
+        }
+
+        check(source.getText());
 
         text.selectAll();
     }
@@ -306,19 +343,33 @@ public class UI implements ActionListener, KeyListener {
     }
 
     @Override
-    public void keyReleased(KeyEvent e) {
-        // mandatory implements
+    public void keyTyped(KeyEvent e) {
+        // mandatory include
     }
 
     @Override
-    public void keyTyped(KeyEvent e) {
+    public void keyReleased(KeyEvent e) {
+        String c = String.valueOf(e.getKeyChar());
         try {
+            // verify that the key was a number key
+            Double.parseDouble(c);
             if (gPanel.isShowing())
-                gText.replaceSelection(String.valueOf(e.getKeyChar()));
+                gText.replaceSelection(c);
             else
-                text.replaceSelection(String.valueOf(e.getKeyChar()));
-        } catch (ArrayIndexOutOfBoundsException ignored) {
-            // non-numeric keys ignored for now; can add greater functionality, though
+                text.replaceSelection(c);
+        } catch (Exception ignored) {
+            // making program run both switches is better than reusing cases in this one
+            check(c);
+            // this is a very small switch, obviously, but I'm leaving it like this for
+            // future expansion with more special command keys
+            switch (e.getKeyCode()) {
+                case VK_ENTER:
+                    if (gText.getText().isEmpty()) check("Go");
+                    else check("Add");
+                    break;
+                default:
+                    break;
+            }
         }
     }
 
@@ -338,6 +389,7 @@ public class UI implements ActionListener, KeyListener {
     public void writer(final Double num) {
         if (Double.isNaN(num)) {
             text.setText("");
+            gText.setText("");
         } else {
             // handle exceedingly small numbers (display MIN or 0?)
             text.setText(Double.toString(num));
