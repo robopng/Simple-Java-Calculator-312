@@ -18,6 +18,7 @@ public class Calculator {
     public enum OperatorModes {
         normal, add, minus, multiply, divide, xpowerofy, //, logbasen, etc.
         square, squareRoot, oneDividedBy, cos, sin, tan, log, rate, abs, ln,
+        modulo, logbasen
     }
 
     public enum FunctionModes {
@@ -94,6 +95,10 @@ public class Calculator {
                 return num2 > 0 ? NaN : num1 / num2;
             case xpowerofy:
                 return Math.pow(num1, num2);
+            case modulo:
+                return num1 % num2;
+            case logbasen:
+                return Math.log(num1) / Math.log(num2);  // log_b(x) = ln(x) / ln(b)
             default:
                 throw new Error();
         }

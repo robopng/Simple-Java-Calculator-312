@@ -31,11 +31,11 @@ import javax.swing.BoxLayout;
 
 import javax.swing.ImageIcon;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.io.*;
 
 import static java.awt.event.KeyEvent.*;
 
-import java.awt.event.KeyListener;
-import java.io.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -54,11 +54,11 @@ public class UI implements ActionListener, KeyListener {
 
     private static final String[] commands = {
             "1", "2", "3", "4", "5", "6", "7", "8", "9", "0",
-            "+", "-", "*", "/", "=", "C", ".", "+/-",
+            "+", "-", "*", "/", "=", ".", "+/-",
             "sqrt", "x^2", "x^y", "1/x",
-            "sin", "cos", "tan", "log", "ln",
-            "x%", "|x|", "bin(x)",
-            "Graph", "Key"
+            "sin", "cos", "tan", "log10", "ln", "logn",
+            "x%", "|x|", "bin(x)", "mod",
+            "Graph", "Key", "C", "A",
     };
     private static final String[] gCommands = {
             "1", "2", "3", "4", "5", "6", "7", "8", "9", "0",
@@ -137,45 +137,51 @@ public class UI implements ActionListener, KeyListener {
         textSub.add(text);
         panel.add(textSub);
         panel.add(this.getPanelSub(
-                new JButton[]{buttons.get("Graph")},
+                new JButton[]{buttons.get("log10"), buttons.get("ln"), buttons.get("logn")},
                 new JButton[]{buttons.get("Key")},
-                173
+                60
         ));
         panel.add(this.getPanelSub(
-                new JButton[]{buttons.get("cos"), buttons.get("sin"), buttons.get("tan"),
-                        buttons.get("log"), buttons.get("ln")}
+                new JButton[]{buttons.get("cos"), buttons.get("sin"), buttons.get("tan")},
+                new JButton[]{buttons.get("Graph")},
+                60
         ));
         panel.add(this.getPanelSub(
                 new JButton[]{buttons.get("x^2"), buttons.get("sqrt"), buttons.get("x^y")},
                 new JButton[]{buttons.get("bin(x)")},
-                15
+                40
         ));
         panel.add(this.getPanelSub(
                 new JButton[]{buttons.get("x%"), buttons.get("|x|"), buttons.get("1/x"), buttons.get("+/-")},
-                new JButton[]{buttons.get("C")},
-                15
+                new JButton[]{buttons.get("mod")},
+                21
         ));
+        JPanel t = this.getPanelSub(
+                new JButton[]{buttons.get("7"), buttons.get("8"), buttons.get("9")},
+                new JButton[]{buttons.get("/")},
+                15
+        );
+        t.add(Box.createHorizontalStrut(44));
+        panel.add(t);
+        JPanel t1 = this.getPanelSub(
+                new JButton[]{buttons.get("4"), buttons.get("5"), buttons.get("6")},
+                new JButton[]{buttons.get("*")},
+                15
+        );
+        t1.add(Box.createHorizontalStrut(44));
+        panel.add(t1);
         panel.add(this.getPanelSub(
                 new JButton[]{buttons.get("1"), buttons.get("2"), buttons.get("3")},
-                new JButton[]{buttons.get("+")},
-                15
-        ));
-        panel.add(this.getPanelSub(
-                new JButton[]{buttons.get("4"), buttons.get("5"), buttons.get("6")},
-                new JButton[]{buttons.get("-")},
-                15
-        ));
-        panel.add(this.getPanelSub(
-                new JButton[]{buttons.get("7"), buttons.get("8"), buttons.get("9")},
-                new JButton[]{buttons.get("*")},
+                new JButton[]{buttons.get("+"), buttons.get("A")},
                 15
         ));
         panel.add(this.getPanelSub(
                 new JButton[]{buttons.get("."), buttons.get("0"), buttons.get("=")},
-                new JButton[]{buttons.get("/")},
+                new JButton[]{buttons.get("-"), buttons.get("C")},
                 15
         ));
 
+        // panel creation for graphing calculator panel
         gPanel.add(Box.createHorizontalStrut(100));
         JPanel gTextSub = new JPanel(new FlowLayout());
         gTextSub.add(gText);
@@ -207,20 +213,12 @@ public class UI implements ActionListener, KeyListener {
         gFrame.add(gPanel);
     }
 
-    private JPanel getPanelSub(JButton[] buttons) {
-        JPanel panelSub = new JPanel(new FlowLayout());
-        for (JButton button : buttons) {
-            panelSub.add(button);
-        }
-        return panelSub;
-    }
-
     private JPanel getPanelSub(JButton[] buttons1, JButton[] buttons2, int width) {
         JPanel panelSub = new JPanel(new FlowLayout());
         for (JButton button : buttons1) {
             panelSub.add(button);
         }
-        panelSub.add(Box.createHorizontalStrut(width));
+        if (width > 0) panelSub.add(Box.createHorizontalStrut(width));
         for (JButton button : buttons2) {
             panelSub.add(button);
         }
@@ -268,7 +266,10 @@ public class UI implements ActionListener, KeyListener {
             case "tan":
                 writer(calc.calculate(Calculator.OperatorModes.tan, reader()));
                 break;
-            case "log":
+            case "logn":
+                writer(calc.calculateBi(Calculator.OperatorModes.logbasen, reader()));
+                break;
+            case "log10":
                 writer(calc.calculate(Calculator.OperatorModes.log, reader()));
                 break;
             case "ln":
@@ -280,10 +281,15 @@ public class UI implements ActionListener, KeyListener {
             case "|x|":
                 writer(calc.calculate(Calculator.OperatorModes.abs, reader()));
                 break;
+            case "mod":
+                writer(calc.calculateBi(Calculator.OperatorModes.modulo, reader()));
+                break;
             case "=":
                 writer(calc.calculateEqual(reader()));
                 break;
             case "C":
+                text.setText("");
+            case "A":
                 writer(calc.reset());
                 break;
             case "bin(x)":
