@@ -54,7 +54,7 @@ public class UI implements ActionListener, KeyListener {
 
     private static final String[] commands = {
             "1", "2", "3", "4", "5", "6", "7", "8", "9", "0",
-            "+", "-", "*", "/", "=", "C",
+            "+", "-", "*", "/", "=", "C", ".", "+/-",
             "sqrt", "x^2", "x^y", "1/x",
             "sin", "cos", "tan", "log", "ln",
             "x%", "|x|", "bin(x)",
@@ -62,7 +62,7 @@ public class UI implements ActionListener, KeyListener {
     };
     private static final String[] gCommands = {
             "1", "2", "3", "4", "5", "6", "7", "8", "9", "0",
-            "Reset", ",", "Go", "Scatter", "Line", "Add", "Series",
+            "Reset", ",", ".", "Go", "Scatter", "Line", "Add", "Series",
             "Key"
     };
     private final Map<String, JButton> buttons = new HashMap<>();
@@ -137,31 +137,43 @@ public class UI implements ActionListener, KeyListener {
         textSub.add(text);
         panel.add(textSub);
         panel.add(this.getPanelSub(
+                new JButton[]{buttons.get("Graph")},
+                new JButton[]{buttons.get("Key")},
+                173
+        ));
+        panel.add(this.getPanelSub(
+                new JButton[]{buttons.get("cos"), buttons.get("sin"), buttons.get("tan"),
+                        buttons.get("log"), buttons.get("ln")}
+        ));
+        panel.add(this.getPanelSub(
+                new JButton[]{buttons.get("x^2"), buttons.get("sqrt"), buttons.get("x^y")},
+                new JButton[]{buttons.get("bin(x)")},
+                15
+        ));
+        panel.add(this.getPanelSub(
+                new JButton[]{buttons.get("x%"), buttons.get("|x|"), buttons.get("1/x"), buttons.get("+/-")},
+                new JButton[]{buttons.get("C")},
+                15
+        ));
+        panel.add(this.getPanelSub(
                 new JButton[]{buttons.get("1"), buttons.get("2"), buttons.get("3")},
-                new JButton[]{buttons.get("+"), buttons.get("-")},
+                new JButton[]{buttons.get("+")},
                 15
         ));
         panel.add(this.getPanelSub(
                 new JButton[]{buttons.get("4"), buttons.get("5"), buttons.get("6")},
-                new JButton[]{buttons.get("*"), buttons.get("/")},
+                new JButton[]{buttons.get("-")},
                 15
         ));
         panel.add(this.getPanelSub(
                 new JButton[]{buttons.get("7"), buttons.get("8"), buttons.get("9")},
-                new JButton[]{buttons.get("="), buttons.get("C")},
+                new JButton[]{buttons.get("*")},
                 15
         ));
         panel.add(this.getPanelSub(
-                new JButton[]{buttons.get("0"), buttons.get("ln"), buttons.get("Graph")}
-        ));
-        panel.add(this.getPanelSub(
-                new JButton[]{buttons.get("x^2"), buttons.get("sqrt"), buttons.get("1/x"), buttons.get("x^y")}
-        ));
-        panel.add(this.getPanelSub(
-                new JButton[]{buttons.get("cos"), buttons.get("sin"), buttons.get("tan")}
-        ));
-        panel.add(this.getPanelSub(
-                new JButton[]{buttons.get("log"), buttons.get("x%"), buttons.get("|x|"), buttons.get("bin(x)"), buttons.get("Key")}
+                new JButton[]{buttons.get("."), buttons.get("0"), buttons.get("=")},
+                new JButton[]{buttons.get("/")},
+                15
         ));
 
         gPanel.add(Box.createHorizontalStrut(100));
@@ -170,23 +182,23 @@ public class UI implements ActionListener, KeyListener {
         gPanel.add(gTextSub);
         gPanel.add(this.getPanelSub(
                 new JButton[]{gButtons.get("1"), gButtons.get("2"), gButtons.get("3")},
+                new JButton[]{gButtons.get("Key")},
+                163
+        ));
+        gPanel.add(this.getPanelSub(
+                new JButton[]{gButtons.get("4"), gButtons.get("5"), gButtons.get("6")},
                 new JButton[]{gButtons.get("Scatter"), gButtons.get("Line")},
                 45
         ));
         gPanel.add(this.getPanelSub(
-                new JButton[]{gButtons.get("4"), gButtons.get("5"), gButtons.get("6")},
-                new JButton[]{gButtons.get(","), gButtons.get("Add"), gButtons.get("Series")},
-                15
-        ));
-        gPanel.add(this.getPanelSub(
                 new JButton[]{gButtons.get("7"), gButtons.get("8"), gButtons.get("9")},
-                new JButton[]{gButtons.get("Go"), gButtons.get("Reset"), gButtons.get("Key")},
-                15
+                new JButton[]{gButtons.get("Add"), gButtons.get("Series")},
+                65
         ));
         gPanel.add(this.getPanelSub(
-                new JButton[]{gButtons.get("0")},
-                new JButton[]{},
-                232
+                new JButton[]{gButtons.get("."), gButtons.get("0"), gButtons.get(",")},
+                new JButton[]{gButtons.get("Go"), gButtons.get("Reset")},
+                85
         ));
 
         frame.add(panel);
@@ -277,6 +289,17 @@ public class UI implements ActionListener, KeyListener {
             case "bin(x)":
                 parseToBinary();
                 break;
+            case ".":
+                if (!text.getText().contains(".")) {
+                    if (gPanel.isShowing()) {
+                        gText.replaceSelection(".");
+                    }
+                    text.replaceSelection(".");
+                }
+                break;
+            case "+/-":
+                writer(reader() * -1.0);
+                break;
             // graphing calculator conditions
             case "Graph":
                 gFrame.setVisible(true);
@@ -308,8 +331,7 @@ public class UI implements ActionListener, KeyListener {
                 gCalc.commitSeries();
                 break;
             case "Go":
-                Thread t = new Thread(gCalc::go);
-                t.start();
+                new Thread(gCalc::go).start();
                 break;
             default:
                 break;
