@@ -10,6 +10,8 @@
  * @create 2012-03-30
  * @modifiedby Achintha Gunasekara
  * @modifiedby Kydon Chantzaridis
+ * @modifiedby Liam Wilson
+ * @modifiedby Celeste Payton
  * @modweb http://www.achinthagunasekara.com
  * @modemail contact@achinthagunasekara.com
  * @modemail kchantza@csd.auth.gr
@@ -36,7 +38,6 @@ import java.io.*;
 
 import static java.awt.event.KeyEvent.*;
 
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -52,6 +53,21 @@ public class UI implements ActionListener, KeyListener {
     private final JTextArea text;
     private final JTextArea gText;
 
+    /*
+     * The following four variables are user defined, and did not exist prior to
+     * project adoption. The intention was to replace lengthy, difficult-to-read button
+     * declarations and initializations with a more comprehensive and versatile
+     * implementation. With these commands, to add a button one only needs to define
+     * its text, position it on the UI, and add a listener consequence. Before, it was
+     * required to declare the button here, initialize it in the constructor, add listeners
+     * and set a font in method init, position it, and add a listener consequence.
+     *
+     * This method does have drawbacks, though, as now it becomes necessary to keep track
+     * of the specific text used for each button when they are changed or added. This is not
+     * a large issue, since most calculator functions use standard text, but it can sometimes
+     * be distracting to have to return to the top of the file to double-check a button like
+     * +/- before going back down to the bottom to finish adding the listener consequence.
+     */
     private static final String[] commands = {
             "1", "2", "3", "4", "5", "6", "7", "8", "9", "0",
             "+", "-", "*", "/", "=", ".", "+/-",
@@ -69,6 +85,14 @@ public class UI implements ActionListener, KeyListener {
     private final Map<String, JButton> gButtons = new HashMap<>();
 
     private final Calculator calc;
+    /*
+     * Apart from cleaning up the codebase and fixing a few issues, the second
+     * primary goal of this project was to add a graphing calculator, or some way to graph
+     * coordinates. More on our efforts here can be found in file GraphCalculator.
+     *
+     * Any variable that starts with g, or contains the word graph, did not exist before
+     * project adoption.
+     */
     private final GraphCalculator gCalc;
 
     private final Font font;
@@ -92,6 +116,11 @@ public class UI implements ActionListener, KeyListener {
         text = new JTextArea(1, 30);
         gText = new JTextArea(1, 30);
 
+        /*
+         * These two for loops are by far the largest contribution to this method, and the most
+         * substantial change from the state it was in prior to project adoption. They replace
+         * dozens of lines of code.
+         */
         for (String command : commands)
             buttons.put(command, new JButton(command));
         for (String command : gCommands)
@@ -102,6 +131,16 @@ public class UI implements ActionListener, KeyListener {
         gCalc = new GraphCalculator();
     }
 
+    /**
+     * Initialize the UI wrapping calculator objects, display panel components, and begin listening
+     * for user input.
+     * ///////////////
+     * This method was significantly altered from the state it was in before this project was adopted.
+     * The primary purpose of this method was (and is) to initialize the panel that contains the
+     * JButtons wrapping calculator functionality, and so the main change is explained in method
+     * getPanelSub, itself a convenient way of building a panel. Other than that, two for-each loops
+     * replace dozens of lines of post-initialization setup.
+     */
     public void init() {
         frame.setSize(450, 450);
         frame.setLocationRelativeTo(null);
@@ -213,6 +252,31 @@ public class UI implements ActionListener, KeyListener {
         gFrame.add(gPanel);
     }
 
+    /**
+     * Given a set of buttons, add those buttons to a new JPanel, with optional spacing.
+     * getPanelSub is intended to provide an easy way to format panel initialization
+     * for calculator UI components by replacing a commonly repeated pattern of initialization
+     * wherein the overall panel of a component was assembled piecemeal by sub-panels, which
+     * themselves were created in a repetitive manner.
+     * ///////////////////////////////////////////////
+     * This is an entirely new method, no part of which existed before project adoption.
+     * However, the process for initializing the temporary panel is based off of the pre-existing
+     * pattern that used to be in the constructor:
+     * subPanel1.add(button...)
+     * subPanel1.add(button...)
+     * subPanel1.add(spacing...)
+     * etc...
+     * panel.add(subPanel1)
+     * Most of the time, there is no need for any spacing beyond separating parts of a row of
+     * buttons (creative concerns notwithstanding), so this method is not overloaded to accommodate
+     * any alternate form of construction.
+     *
+     * @param buttons1 the first set of buttons to add to the panel
+     * @param buttons2 the second set of buttons to add to the panel
+     * @param width    the width between the last button in the first set and the first button
+     *                 in the second set
+     * @return the fully assembled JPanel
+     */
     private JPanel getPanelSub(JButton[] buttons1, JButton[] buttons2, int width) {
         JPanel panelSub = new JPanel(new FlowLayout());
         for (JButton button : buttons1) {
@@ -225,8 +289,19 @@ public class UI implements ActionListener, KeyListener {
         return panelSub;
     }
 
+    /**
+     * Switch a code and process that code's consequence.
+     * Codes are string representations of calculator commands, and are static to new UI objects.
+     * //////////////////////////////////////////////////////////////////////////////////////////
+     * This method is a replacement for a previously defined pattern before project adoption.
+     * The switch statement contained below used to be an if chain in method actionPerformed.
+     * Also, much of the content of the switch's cases was incompatible with newly defined structures
+     * and was changed appropriately.
+     *
+     * @param code the code to be switched.
+     */
     public void check(String code) {
-        // used in more complex input situations where criteria need to be met before continuing
+        // pattern used in more complex input situations where criteria need to be met before continuing
         Pattern pattern;
         switch (code) {
             case "+":
@@ -344,6 +419,19 @@ public class UI implements ActionListener, KeyListener {
         }
     }
 
+    /**
+     * Listen for a mouse button click on one of the UI's JButtons.
+     * If the button pressed represents a number key, the key is treated as a digit in the curren
+     * number (or as the first digit of a new number if there is none currently in the text panel).
+     * Otherwise, the text the button represents is passed to method check for special command
+     * processing.
+     * ///////////
+     * This method was significantly altered from the state it was in before this project was adopted.
+     * Namely, the if-else chain that used to be here was moved into method check. Also, accommodations
+     * were made for number buttons being hit in the graphing calculator component.
+     *
+     * @param e the event to be processed
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         // Casting down is bad for the environment! Can this be changed?
@@ -375,11 +463,24 @@ public class UI implements ActionListener, KeyListener {
         // mandatory include
     }
 
+    /**
+     * Listen for a keystroke being lifted when the calculator expects keyboard input.
+     * If the key pressed was a number key, the key is treated as a digit in the current number
+     * (or the beginning digit of a new number if there is none currently in the text panel).
+     * Otherwise, the key is treated as a special command, and the key is passed into method
+     * check for processing. Once check has processed the key, it goes through a second switch
+     * inside this method to handle special commands from non-alphanumeric keys.
+     * /////////////////////////////////////////////////////////////////////////
+     * This is an entirely new method, no part of which existed before project adoption.
+     * The intention is to allow for certain repetitive clicks to be replaced with fluid typing.
+     *
+     * @param e the event to be processed
+     */
     @Override
     public void keyReleased(KeyEvent e) {
         String c = String.valueOf(e.getKeyChar());
         try {
-            // verify that the key was a number key
+            // verify that the key was a number key otherwise go to the catch block
             Double.parseDouble(c);
             if (gPanel.isShowing())
                 gText.replaceSelection(c);
@@ -395,12 +496,18 @@ public class UI implements ActionListener, KeyListener {
                     if (gText.getText().isEmpty()) check("Go");
                     else check("Add");
                     break;
+                case VK_BACK_SPACE:
+                    // check if gText or text; make them gText.getText.substr(0, gText.getText.length - 1)
+                    break;
                 default:
                     break;
             }
         }
     }
 
+    /**
+     * NON-STUDENT WRITTEN METHOD
+     */
     private void parseToBinary() {
         // currently this cannot handle strings with E in them
         try {
@@ -410,10 +517,16 @@ public class UI implements ActionListener, KeyListener {
         }
     }
 
+    /**
+     * NON-STUDENT WRITTEN METHOD
+     */
     public Double reader() {
         return text.getText().isEmpty() ? 0 : Double.parseDouble(text.getText());
     }
 
+    /**
+     * NON-STUDENT WRITTEN METHOD
+     */
     public void writer(final Double num) {
         if (Double.isNaN(num)) {
             text.setText("");
